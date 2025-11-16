@@ -1,0 +1,6 @@
+package: generated
+
+generate:
+  models: true
+
+output: ./api/generated/models.gen.go

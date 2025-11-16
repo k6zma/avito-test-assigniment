@@ -1,0 +1,20 @@
+all: false
+filename: "{{.InterfaceName | snakecase}}.go"
+structname: "Mock{{.InterfaceName}}"
+pkgname: "mocks"
+template: testify
+
+packages:
+  github.com/k6zma/avito-test-assigniment/internal/domain/repositories:
+    config:
+      dir: mocks/repositories
+    interfaces:
+      Note: {}
+      Task: {}
+      Order: {}
+
+  github.com/k6zma/avito-test-assigniment/internal/domain/discounts:
+    config:
+      dir: mocks/discounts
+    interfaces:
+      Strategy: {}

@@ -1,0 +1,58 @@
+services:
+  prod-peerly-postgres-db:
+    image: postgres:18
+    container_name: prod-peerly-postgres-db
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - /opt/peerly-app/prod-postgres-db:/var/lib/postgresql
+    networks:
+      - prod-peerly-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME}'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  prod-peerly-postgres-migrations:
+    image: migrate/migrate:4
+    container_name: prod-peerly-postgres-migrations
+    networks:
+      - prod-peerly-network
+    restart: no
+    depends_on:
+      prod-peerly-postgres-db:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations
+    command:
+      ["-path", "/migrations", "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@prod-peerly-postgres-db:5432/${POSTGRES_DB_NAME}?sslmode=disable", "up"]
+
+  prod-peerly-app:
+    build:
+      context: .
+      dockerfile: build/Dockerfile
+    container_name: prod-peerly-app
+    env_file:
+      - .env
+    depends_on:
+      prod-peerly-postgres-db:
+        condition: service_healthy
+      prod-peerly-postgres-migrations:
+        condition: service_completed_successfully
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    networks:
+      - prod-peerly-network
+    restart: unless-stopped
+
+networks:
+  prod-peerly-network:
+    driver: bridge

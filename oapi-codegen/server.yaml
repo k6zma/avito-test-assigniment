@@ -1,0 +1,6 @@
+package: generated
+
+generate:
+  fiber-server: true
+
+output: ./api/generated/server.gen.go
