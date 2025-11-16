@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/gofiber/fiber/v2"
+
 	apperrors "github.com/k6zma/avito-test-assigniment/internal/domain/errors"
 )
 
