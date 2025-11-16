@@ -9,12 +9,18 @@ import (
 
 // Defines values for ErrorResponseErrorCode.
 const (
-	NOCANDIDATE ErrorResponseErrorCode = "NO_CANDIDATE"
-	NOTASSIGNED ErrorResponseErrorCode = "NOT_ASSIGNED"
-	NOTFOUND    ErrorResponseErrorCode = "NOT_FOUND"
-	PREXISTS    ErrorResponseErrorCode = "PR_EXISTS"
-	PRMERGED    ErrorResponseErrorCode = "PR_MERGED"
-	TEAMEXISTS  ErrorResponseErrorCode = "TEAM_EXISTS"
+	INTERNALERROR   ErrorResponseErrorCode = "INTERNAL_ERROR"
+	NOCANDIDATE     ErrorResponseErrorCode = "NO_CANDIDATE"
+	NOTASSIGNED     ErrorResponseErrorCode = "NOT_ASSIGNED"
+	PREXISTS        ErrorResponseErrorCode = "PR_EXISTS"
+	PRMERGED        ErrorResponseErrorCode = "PR_MERGED"
+	PRNOTFOUND      ErrorResponseErrorCode = "PR_NOT_FOUND"
+	PRNOTOPEN       ErrorResponseErrorCode = "PR_NOT_OPEN"
+	TEAMEXISTS      ErrorResponseErrorCode = "TEAM_EXISTS"
+	TEAMNOTFOUND    ErrorResponseErrorCode = "TEAM_NOT_FOUND"
+	USERINACTIVE    ErrorResponseErrorCode = "USER_INACTIVE"
+	USERNOTFOUND    ErrorResponseErrorCode = "USER_NOT_FOUND"
+	VALIDATIONERROR ErrorResponseErrorCode = "VALIDATION_ERROR"
 )
 
 // Defines values for PullRequestStatus.
