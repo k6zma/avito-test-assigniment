@@ -20,6 +20,9 @@ API_TOOLS = \
     github.com/daveshanley/vacuum@latest \
     github.com/oasdiff/oasdiff@latest
 
+STORAGE_TOOLS = \
+	github.com/sqlc-dev/sqlc/cmd/sqlc@latest
+
 COVERAGE_FILE ?= coverage.out
 COVERAGE_EXCLUDE_PATTERNS := \
 	$(MODULE_NAME)/api/docs% \
@@ -40,6 +43,12 @@ COVERAGE_PACKAGES := $(filter-out $(COVERAGE_EXCLUDE_PATTERNS),$(shell go list .
 
 DOCKER_DEV_COMPOSE := dev.docker-compose.yaml
 DOCKER_PROD_COMPOSE := prod.docker-compose.yaml
+
+SQLC := sqlc
+MIGRATE := migrate
+
+MIGRATIONS_DIR := migrations
+SQLC_CONFIG := sqlc.yaml
 
 OPENAPI_FILE := api/docs/openapi.yml
 OPENAPI_GEN_DIR := api/generated
