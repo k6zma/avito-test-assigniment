@@ -101,4 +101,3 @@ func TestToDTOTeam(t *testing.T) {
 		t.Errorf("expected %d members but got %d", len(team.Members), len(dto.Members))
 	}
 }
-

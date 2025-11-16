@@ -3,21 +3,16 @@ package reassign
 import (
 	"context"
 	"math/rand"
-	"time"
 
 	"github.com/google/uuid"
 
 	"github.com/k6zma/avito-test-assigniment/internal/domain/models"
 )
 
-type BaseReassignStrategy struct {
-	rng *rand.Rand
-}
+type BaseReassignStrategy struct{}
 
 func NewBaseReassignStrategy() *BaseReassignStrategy {
-	return &BaseReassignStrategy{
-		rng: rand.New(rand.NewSource(time.Now().UnixNano())),
-	}
+	return &BaseReassignStrategy{}
 }
 
 func (s *BaseReassignStrategy) PickReplacementReviewers(
@@ -40,7 +35,7 @@ func (s *BaseReassignStrategy) PickReplacementReviewers(
 		return uuid.Nil, nil
 	}
 
-	idx := s.rng.Intn(len(filtered))
+	idx := rand.Intn(len(filtered))
 
 	return filtered[idx], nil
 }

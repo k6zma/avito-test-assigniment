@@ -13,4 +13,3 @@ func initValidators(t *testing.T) {
 		t.Fatalf("failed to init validators: %v", err)
 	}
 }
-

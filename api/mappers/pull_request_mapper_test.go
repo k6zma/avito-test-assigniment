@@ -13,9 +13,9 @@ import (
 )
 
 type pullRequestDTOTestCase struct {
-	name      string
-	dto       dtos.PullRequest
-	wantErr   bool
+	name    string
+	dto     dtos.PullRequest
+	wantErr bool
 }
 
 func TestToDomainPullRequest_Valid(t *testing.T) {
@@ -142,7 +142,12 @@ func TestToDomainPullRequest_InvalidCases(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, err := mappers.ToDomainPullRequest(tt.dto)
 			if (err != nil) != tt.wantErr {
-				t.Fatalf("unexpected error state: gotErr=%v, wantErr=%v, err=%v", err != nil, tt.wantErr, err)
+				t.Fatalf(
+					"unexpected error state: gotErr=%v, wantErr=%v, err=%v",
+					err != nil,
+					tt.wantErr,
+					err,
+				)
 			}
 		})
 	}
@@ -155,7 +160,13 @@ func TestToDTOPullRequest(t *testing.T) {
 	authorID := uuid.New()
 	reviewer := uuid.New()
 
-	pr, err := models.NewPullRequest(id, "Refactor", authorID, valueobjects.OpenPullRequest, []uuid.UUID{reviewer})
+	pr, err := models.NewPullRequest(
+		id,
+		"Refactor",
+		authorID,
+		valueobjects.OpenPullRequest,
+		[]uuid.UUID{reviewer},
+	)
 	if err != nil {
 		t.Fatalf("setup pull request failed: %v", err)
 	}
@@ -178,7 +189,11 @@ func TestToDTOPullRequest(t *testing.T) {
 	}
 
 	if len(dto.AssignedReviewers) != len(pr.AssignedReviewers) {
-		t.Errorf("expected %d reviewers but got %d", len(pr.AssignedReviewers), len(dto.AssignedReviewers))
+		t.Errorf(
+			"expected %d reviewers but got %d",
+			len(pr.AssignedReviewers),
+			len(dto.AssignedReviewers),
+		)
 	}
 
 	if dto.CreatedAt == nil || !dto.CreatedAt.Equal(pr.CreatedAt) {
@@ -189,4 +204,3 @@ func TestToDTOPullRequest(t *testing.T) {
 		t.Errorf("expected MergedAt %v but got %v", pr.MergedAt, dto.MergedAt)
 	}
 }
-

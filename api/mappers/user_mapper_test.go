@@ -100,4 +100,3 @@ func TestToDTOUser(t *testing.T) {
 		t.Errorf("expected IsActive %v but got %v", user.IsActive, dto.IsActive)
 	}
 }
-

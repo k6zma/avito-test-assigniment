@@ -67,14 +67,14 @@ test: ## Запуск тестов
 	@echo -e "$(YELLOW)[INFO][TEST][STARTED]$(RESET) Запуск тестов"
 	@go test -v ./... && \
 		echo -e "$(GREEN)[INFO][TEST][SUCCESS]$(RESET) Все тесты прошли успешно" || \
-		echo -е "$(RED)[ERROR][TEST][FAIL]$(RESET) Тесты завершились с ошибками"
+		echo -e "$(RED)[ERROR][TEST][FAIL]$(RESET) Тесты завершились с ошибками"
 
 .PHONY: race-test
 race-test: ## Запуск тестов с проверкой на гонку данных
-	@echo -е "$(YELLOW)[INFO][TEST][STARTED]$(RESET) Запуск тестов с проверкой на гонку данных"
+	@echo -e "$(YELLOW)[INFO][TEST][STARTED]$(RESET) Запуск тестов с проверкой на гонку данных"
 	@go test -v -race ./... && \
-		echo -е "$(GREEN)[INFO][TEST][SUCCESS]$(RESET) Все тесты прошли успешно" || \
-		echo -е "$(RED)[ERROR][TEST][FAIL]$(RESET) Тесты завершились с ошибками"
+		echo -e "$(GREEN)[INFO][TEST][SUCCESS]$(RESET) Все тесты прошли успешно" || \
+		echo -e "$(RED)[ERROR][TEST][FAIL]$(RESET) Тесты завершились с ошибками"
 
 .PHONY: coverage
 coverage: ## Запуск тестов с проверкой покрытия
@@ -90,4 +90,3 @@ bench: ## Запуск бенчмарк тестов
 	@go test -bench=. ./... && \
 		echo -e "$(GREEN)[INFO][BENCH][SUCCESS]$(RESET) Бенчмарки завершены" || \
 		echo -e "$(RED)[ERROR][BENCH][FAIL]$(RESET) Ошибка при выполнении бенчмарков"
-

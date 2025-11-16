@@ -89,4 +89,3 @@ func TestToDTOTeamMember(t *testing.T) {
 		t.Errorf("expected IsActive %v but got %v", member.IsActive, dto.IsActive)
 	}
 }
-

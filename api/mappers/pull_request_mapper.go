@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	dtos "github.com/k6zma/avito-test-assigniment/api/generated"
 	"github.com/k6zma/avito-test-assigniment/internal/domain/models"
 	"github.com/k6zma/avito-test-assigniment/internal/domain/valueobjects"

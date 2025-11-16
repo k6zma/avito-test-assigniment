@@ -40,4 +40,3 @@ func TestToDTOPRShort(t *testing.T) {
 		t.Errorf("expected Status %q but got %q", pr.Status, dto.Status)
 	}
 }
-

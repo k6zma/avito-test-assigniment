@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+
 	dtos "github.com/k6zma/avito-test-assigniment/api/generated"
 	"github.com/k6zma/avito-test-assigniment/internal/domain/models"
 )
