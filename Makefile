@@ -1,9 +1,10 @@
 include Makefiles/00-common.mk
 include Makefiles/01-tools.mk
 include Makefiles/02-go.mk
-include Makefiles/03-api.mk
-include Makefiles/04-docker-dev.mk
-include Makefiles/05-docker-prod.mk
+include Makefiles/03-storages.mk
+include Makefiles/04-api.mk
+include Makefiles/05-docker-dev.mk
+include Makefiles/06-docker-prod.mk
 
 .PHONY: help
 help: ## Показать список доступных для использования джоб
