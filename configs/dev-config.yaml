@@ -1,0 +1,27 @@
+server: # Настройки сервера
+  app_name: "Peerly Dev" # Имя приложения
+  host: 127.0.0.1 # Хост сервера
+  port: 8080 # Порт сервера
+  concurrency: 128 # Лимит одновременных обработок запросов
+  read_timeout: 10s # Время ожидания чтения
+  write_timeout: 10s # Время ожидания записи
+  idle_timeout: 10s # Максимальное время простоя соединения
+  shutdown_timeout: 30s # Время ожидания завершения работы сервера
+  prefork: false # Включение/отключение prefork режима
+
+postgres: # Настройки базы данных postgres
+  host: localhost # Хост базы данных
+  port: 5432 # Порт базы данных
+  name: peerly-postgres-db-name # Имя базы данных
+  user: peerly-postgres-user # Пользователь базы данных
+  password: peerly-postgres-password # Пароль базы данных
+  max_connections: 20 # Максимальное количество подключений
+  min_connections: 5 # Минмиальное количество подключений
+  connection_timeout: 10s # Время ожидания подключения
+  max_conn_lifetime: 30m # Максимальное время жизни подключения
+  max_conn_idle_time: 5m # Максимальное время простоя подключения
+  health_check_period: 30s # Период проверки healthchek'ов подключения
+
+logging: # Настройки логирования
+  level: debug # Уровень логирования (debug, info, warn, error)
+  format: text # Формат логов (text или json)

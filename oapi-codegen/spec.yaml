@@ -1,0 +1,6 @@
+package: generated
+
+generate:
+  embedded-spec: true
+
+output: ./api/generated/spec.gen.go
