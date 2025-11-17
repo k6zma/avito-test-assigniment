@@ -11,7 +11,7 @@ func ToDomainReviewer(id pgtype.UUID) uuid.UUID {
 	return UUIDFromPg(id)
 }
 
-func ToDBReviewer(pullRequestID uuid.UUID, reviewerID uuid.UUID) generated.AddReviewerParams {
+func ToDBReviewer(pullRequestID, reviewerID uuid.UUID) generated.AddReviewerParams {
 	return generated.AddReviewerParams{
 		ID:            UUIDToPg(uuid.New()),
 		PullRequestID: UUIDToPg(pullRequestID),

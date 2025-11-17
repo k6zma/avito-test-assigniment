@@ -19,6 +19,12 @@ WHERE team_name = $1
   AND is_active = TRUE
 ORDER BY user_id;
 
+-- name: ListUsersInTeam :many
+SELECT user_id
+FROM users
+WHERE team_name = $1
+ORDER BY user_id;
+
 -- name: SetUserActive :one
 UPDATE users
 SET is_active = $2

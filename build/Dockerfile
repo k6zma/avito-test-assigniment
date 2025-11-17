@@ -16,6 +16,8 @@ FROM alpine:3.20
 WORKDIR /app
 
 COPY --from=builder /app/peerly /usr/local/bin/peerly
+
 COPY configs ./configs
+COPY api/docs ./api/docs
 
 ENTRYPOINT ["/usr/local/bin/peerly"]

@@ -39,17 +39,24 @@ components:
               type: string
               enum:
                 - TEAM_EXISTS
+                - TEAM_NOT_FOUND
+                - USER_NOT_FOUND
+                - USER_INACTIVE
                 - PR_EXISTS
+                - PR_NOT_FOUND
                 - PR_MERGED
+                - PR_NOT_OPEN
+                - REVIEWER_NOT_FOUND
                 - NOT_ASSIGNED
                 - NO_CANDIDATE
-                - NOT_FOUND
+                - VALIDATION_ERROR
+                - INTERNAL_ERROR
             message:
               type: string
       example:
         error:
-          code: NOT_FOUND
-          message: resource not found
+          code: TEAM_NOT_FOUND
+          message: team not found
     TeamMember:
       type: object
       required: [ user_id, username, is_active ]
@@ -201,6 +208,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                error:
+                  code: TEAM_NOT_FOUND
+                  message: team not found
 
   /users/setIsActive:
     post:
@@ -243,6 +254,10 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
+              example:
+                error:
+                  code: USER_NOT_FOUND
+                  message: user not found
 
   /pullRequest/create:
     post:
@@ -287,12 +302,21 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
         '409':
-          description: PR уже существует
+          description: Кофнликт при создании PR
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
-              example:
-                error: { code: PR_EXISTS, message: PR id already exists }
+              examples:
+                exists:
+                  value:
+                    error:
+                      code: PR_EXISTS
+                      message: pull request already exists
+                inactiveAuthor:
+                  value:
+                    error:
+                      code: USER_INACTIVE
+                      message: author inactive
 
   /pullRequest/merge:
     post:

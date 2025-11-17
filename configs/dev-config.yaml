@@ -1,6 +1,6 @@
 server: # Настройки сервера
   app_name: "Peerly Dev" # Имя приложения
-  host: 127.0.0.1 # Хост сервера
+  host: 0.0.0.0 # Хост сервера
   port: 8080 # Порт сервера
   concurrency: 128 # Лимит одновременных обработок запросов
   read_timeout: 10s # Время ожидания чтения
@@ -10,7 +10,7 @@ server: # Настройки сервера
   prefork: false # Включение/отключение prefork режима
 
 postgres: # Настройки базы данных postgres
-  host: localhost # Хост базы данных
+  host: dev-peerly-postgres-db # Хост базы данных
   port: 5432 # Порт базы данных
   name: peerly-postgres-db-name # Имя базы данных
   user: peerly-postgres-user # Пользователь базы данных

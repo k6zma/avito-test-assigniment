@@ -3,7 +3,6 @@ package initialize
 import (
 	"context"
 	"math/rand"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -12,7 +11,6 @@ import (
 
 type BaseInitializeStrategy struct {
 	numReviewers int
-	rng          *rand.Rand
 }
 
 func NewBaseInitializeStrategy(n int) *BaseInitializeStrategy {
@@ -22,7 +20,6 @@ func NewBaseInitializeStrategy(n int) *BaseInitializeStrategy {
 
 	return &BaseInitializeStrategy{
 		numReviewers: n,
-		rng:          rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
 }
 
@@ -39,7 +36,7 @@ func (s *BaseInitializeStrategy) PickInitialReviewers(
 		return candidates, nil
 	}
 
-	s.rng.Shuffle(len(candidates), func(i, j int) {
+	rand.Shuffle(len(candidates), func(i, j int) {
 		candidates[i], candidates[j] = candidates[j], candidates[i]
 	})
 

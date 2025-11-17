@@ -21,6 +21,7 @@ func TestNewUser_Valid(t *testing.T) {
 	initValidators(t)
 
 	id := uuid.New()
+
 	user, err := models.NewUser(id, "Alice", "backend", true)
 	if err != nil {
 		t.Fatalf("expected no error but got %v", err)

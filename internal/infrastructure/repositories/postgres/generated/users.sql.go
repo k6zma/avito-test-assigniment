@@ -57,6 +57,33 @@ func (q *Queries) ListActiveUsersInTeam(ctx context.Context, teamName string) ([
 	return items, nil
 }
 
+const listUsersInTeam = `-- name: ListUsersInTeam :many
+SELECT user_id
+FROM users
+WHERE team_name = $1
+ORDER BY user_id
+`
+
+func (q *Queries) ListUsersInTeam(ctx context.Context, teamName string) ([]pgtype.UUID, error) {
+	rows, err := q.db.Query(ctx, listUsersInTeam, teamName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []pgtype.UUID{}
+	for rows.Next() {
+		var user_id pgtype.UUID
+		if err := rows.Scan(&user_id); err != nil {
+			return nil, err
+		}
+		items = append(items, user_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const setUserActive = `-- name: SetUserActive :one
 UPDATE users
 SET is_active = $2

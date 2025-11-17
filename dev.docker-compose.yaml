@@ -37,18 +37,16 @@ services:
     build:
       context: .
       dockerfile: build/Dockerfile
-    container_name: prod-peerly-app
-    env_file:
-      - .env
+    container_name: dev-peerly-app
     depends_on:
-      prod-peerly-postgres-db:
+      dev-peerly-postgres-db:
         condition: service_healthy
-      prod-peerly-postgres-migrations:
+      dev-peerly-postgres-migrations:
         condition: service_completed_successfully
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}"
+      - "8080:8080"
     networks:
-      - prod-peerly-network
+      - dev-peerly-network
     restart: unless-stopped
 
 networks:

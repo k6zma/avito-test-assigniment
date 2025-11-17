@@ -19,14 +19,14 @@ var Environment = flag.String(
 	environmentFlagDescription,
 )
 
-type HubFlags struct {
+type PeerlyFlags struct {
 	Environment string `validate:"required,oneof=dev prod"`
 }
 
-func GetHubFlags() (*HubFlags, error) {
+func GetHubFlags() (*PeerlyFlags, error) {
 	flag.Parse()
 
-	result := &HubFlags{
+	result := &PeerlyFlags{
 		Environment: *Environment,
 	}
 
@@ -37,6 +37,6 @@ func GetHubFlags() (*HubFlags, error) {
 	return result, nil
 }
 
-func (f *HubFlags) String() string {
+func (f *PeerlyFlags) String() string {
 	return fmt.Sprintf("Environment: %s", f.Environment)
 }
