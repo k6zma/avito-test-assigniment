@@ -21,50 +21,50 @@ type pullRequestDTOTestCase struct {
 func TestToDomainPullRequest_Valid(t *testing.T) {
 	initValidators(t)
 
-	id := uuid.New()
+	pullRequestID := uuid.New()
 	authorID := uuid.New()
-	reviewer1 := uuid.New()
-	reviewer2 := uuid.New()
+	reviewerID1 := uuid.New()
+	reviewerID2 := uuid.New()
 	createdAt := time.Now().UTC()
 	mergedAt := createdAt.Add(time.Hour).UTC()
 
 	dto := dtos.PullRequest{
-		PullRequestId:     id.String(),
+		PullRequestId:     pullRequestID.String(),
 		PullRequestName:   "Add feature",
 		AuthorId:          authorID.String(),
 		Status:            dtos.PullRequestStatusOPEN,
-		AssignedReviewers: []string{reviewer1.String(), reviewer2.String()},
+		AssignedReviewers: []string{reviewerID1.String(), reviewerID2.String()},
 		CreatedAt:         &createdAt,
 		MergedAt:          &mergedAt,
 	}
 
-	pr, err := mappers.ToDomainPullRequest(dto)
+	pullRequest, err := mappers.ToDomainPullRequest(dto)
 	if err != nil {
 		t.Fatalf("expected no error but got %v", err)
 	}
 
-	if pr.ID != id {
-		t.Errorf("expected ID %v but got %v", id, pr.ID)
+	if pullRequest.ID != pullRequestID {
+		t.Errorf("expected ID %v but got %v", pullRequestID, pullRequest.ID)
 	}
 
-	if pr.AuthorID != authorID {
-		t.Errorf("expected AuthorID %v but got %v", authorID, pr.AuthorID)
+	if pullRequest.AuthorID != authorID {
+		t.Errorf("expected AuthorID %v but got %v", authorID, pullRequest.AuthorID)
 	}
 
-	if pr.Status != valueobjects.OpenPullRequest {
-		t.Errorf("expected Status %q but got %q", valueobjects.OpenPullRequest, pr.Status)
+	if pullRequest.Status != valueobjects.OpenPullRequest {
+		t.Errorf("expected Status %q but got %q", valueobjects.OpenPullRequest, pullRequest.Status)
 	}
 
-	if len(pr.AssignedReviewers) != 2 {
-		t.Errorf("expected 2 reviewers but got %d", len(pr.AssignedReviewers))
+	if len(pullRequest.AssignedReviewers) != 2 {
+		t.Errorf("expected 2 reviewers but got %d", len(pullRequest.AssignedReviewers))
 	}
 
-	if pr.MergedAt == nil || !pr.MergedAt.Equal(mergedAt) {
-		t.Errorf("expected MergedAt %v but got %v", mergedAt, pr.MergedAt)
+	if pullRequest.MergedAt == nil || !pullRequest.MergedAt.Equal(mergedAt) {
+		t.Errorf("expected MergedAt %v but got %v", mergedAt, pullRequest.MergedAt)
 	}
 
-	if !pr.CreatedAt.Equal(createdAt) {
-		t.Errorf("expected CreatedAt %v but got %v", createdAt, pr.CreatedAt)
+	if !pullRequest.CreatedAt.Equal(createdAt) {
+		t.Errorf("expected CreatedAt %v but got %v", createdAt, pullRequest.CreatedAt)
 	}
 }
 
@@ -160,7 +160,7 @@ func TestToDTOPullRequest(t *testing.T) {
 	authorID := uuid.New()
 	reviewer := uuid.New()
 
-	pr, err := models.NewPullRequest(
+	pullRequest, err := models.NewPullRequest(
 		id,
 		"Refactor",
 		authorID,
@@ -172,35 +172,35 @@ func TestToDTOPullRequest(t *testing.T) {
 	}
 
 	now := time.Now().UTC()
-	pr.MergedAt = &now
+	pullRequest.MergedAt = &now
 
-	dto := mappers.ToDTOPullRequest(pr)
+	dto := mappers.ToDTOPullRequest(pullRequest)
 
-	if dto.PullRequestId != pr.ID.String() {
-		t.Errorf("expected PullRequestId %q but got %q", pr.ID.String(), dto.PullRequestId)
+	if dto.PullRequestId != pullRequest.ID.String() {
+		t.Errorf("expected PullRequestId %q but got %q", pullRequest.ID.String(), dto.PullRequestId)
 	}
 
-	if dto.PullRequestName != pr.Name {
-		t.Errorf("expected PullRequestName %q but got %q", pr.Name, dto.PullRequestName)
+	if dto.PullRequestName != pullRequest.Name {
+		t.Errorf("expected PullRequestName %q but got %q", pullRequest.Name, dto.PullRequestName)
 	}
 
-	if dto.AuthorId != pr.AuthorID.String() {
-		t.Errorf("expected AuthorId %q but got %q", pr.AuthorID.String(), dto.AuthorId)
+	if dto.AuthorId != pullRequest.AuthorID.String() {
+		t.Errorf("expected AuthorId %q but got %q", pullRequest.AuthorID.String(), dto.AuthorId)
 	}
 
-	if len(dto.AssignedReviewers) != len(pr.AssignedReviewers) {
+	if len(dto.AssignedReviewers) != len(pullRequest.AssignedReviewers) {
 		t.Errorf(
 			"expected %d reviewers but got %d",
-			len(pr.AssignedReviewers),
+			len(pullRequest.AssignedReviewers),
 			len(dto.AssignedReviewers),
 		)
 	}
 
-	if dto.CreatedAt == nil || !dto.CreatedAt.Equal(pr.CreatedAt) {
-		t.Errorf("expected CreatedAt %v but got %v", pr.CreatedAt, dto.CreatedAt)
+	if dto.CreatedAt == nil || !dto.CreatedAt.Equal(pullRequest.CreatedAt) {
+		t.Errorf("expected CreatedAt %v but got %v", pullRequest.CreatedAt, dto.CreatedAt)
 	}
 
-	if dto.MergedAt == nil || !dto.MergedAt.Equal(*pr.MergedAt) {
-		t.Errorf("expected MergedAt %v but got %v", pr.MergedAt, dto.MergedAt)
+	if dto.MergedAt == nil || !dto.MergedAt.Equal(*pullRequest.MergedAt) {
+		t.Errorf("expected MergedAt %v but got %v", pullRequest.MergedAt, dto.MergedAt)
 	}
 }

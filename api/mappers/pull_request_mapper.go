@@ -12,7 +12,7 @@ import (
 )
 
 func ToDomainPullRequest(dto dtos.PullRequest) (*models.PullRequest, error) {
-	id, err := uuid.Parse(dto.PullRequestId)
+	pullRequestID, err := uuid.Parse(dto.PullRequestId)
 	if err != nil {
 		return nil, fmt.Errorf("invalid pull_request_id: %w", err)
 	}
@@ -29,17 +29,17 @@ func ToDomainPullRequest(dto dtos.PullRequest) (*models.PullRequest, error) {
 
 	reviewers := make([]uuid.UUID, 0, len(dto.AssignedReviewers))
 
-	for _, rid := range dto.AssignedReviewers {
-		uid, err := uuid.Parse(rid)
+	for _, reviewerID := range dto.AssignedReviewers {
+		userID, err := uuid.Parse(reviewerID)
 		if err != nil {
 			return nil, fmt.Errorf("invalid reviewer uuid: %w", err)
 		}
 
-		reviewers = append(reviewers, uid)
+		reviewers = append(reviewers, userID)
 	}
 
-	pr := &models.PullRequest{
-		ID:                id,
+	pullRequest := &models.PullRequest{
+		ID:                pullRequestID,
 		Name:              dto.PullRequestName,
 		AuthorID:          authorID,
 		Status:            status,
@@ -47,43 +47,46 @@ func ToDomainPullRequest(dto dtos.PullRequest) (*models.PullRequest, error) {
 	}
 
 	if dto.CreatedAt != nil {
-		pr.CreatedAt = dto.CreatedAt.UTC()
+		pullRequest.CreatedAt = dto.CreatedAt.UTC()
 	} else {
-		pr.CreatedAt = time.Time{}
+		pullRequest.CreatedAt = time.Time{}
 	}
 
 	if dto.MergedAt != nil {
 		mergedAt := dto.MergedAt.UTC()
-		pr.MergedAt = &mergedAt
+		pullRequest.MergedAt = &mergedAt
 	}
 
-	if err = pr.Validate(); err != nil {
+	if err = pullRequest.Validate(); err != nil {
 		return nil, err
 	}
 
-	return pr, nil
+	return pullRequest, nil
 }
 
-func ToDTOPullRequest(pr *models.PullRequest) dtos.PullRequest {
-	dto := dtos.PullRequest{
-		PullRequestId:     pr.ID.String(),
-		PullRequestName:   pr.Name,
-		AuthorId:          pr.AuthorID.String(),
-		Status:            dtos.PullRequestStatus(pr.Status),
-		AssignedReviewers: make([]string, 0, len(pr.AssignedReviewers)),
+func ToDTOPullRequest(pullRequest *models.PullRequest) dtos.PullRequest {
+	pullRequestDTO := dtos.PullRequest{
+		PullRequestId:     pullRequest.ID.String(),
+		PullRequestName:   pullRequest.Name,
+		AuthorId:          pullRequest.AuthorID.String(),
+		Status:            dtos.PullRequestStatus(pullRequest.Status),
+		AssignedReviewers: make([]string, 0, len(pullRequest.AssignedReviewers)),
 	}
 
-	for _, r := range pr.AssignedReviewers {
-		dto.AssignedReviewers = append(dto.AssignedReviewers, r.String())
+	for _, reviewerID := range pullRequest.AssignedReviewers {
+		pullRequestDTO.AssignedReviewers = append(
+			pullRequestDTO.AssignedReviewers,
+			reviewerID.String(),
+		)
 	}
 
-	createdAt := pr.CreatedAt
-	dto.CreatedAt = &createdAt
+	createdAt := pullRequest.CreatedAt
+	pullRequestDTO.CreatedAt = &createdAt
 
-	if pr.MergedAt != nil {
-		mergedAt := pr.MergedAt.UTC()
-		dto.MergedAt = &mergedAt
+	if pullRequest.MergedAt != nil {
+		mergedAt := pullRequest.MergedAt.UTC()
+		pullRequestDTO.MergedAt = &mergedAt
 	}
 
-	return dto
+	return pullRequestDTO
 }

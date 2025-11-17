@@ -17,26 +17,32 @@ func TestToDTOPRShort(t *testing.T) {
 	id := uuid.New()
 	authorID := uuid.New()
 
-	pr, err := models.NewPullRequest(id, "Title", authorID, valueobjects.OpenPullRequest, nil)
+	pullRequest, err := models.NewPullRequest(
+		id,
+		"Title",
+		authorID,
+		valueobjects.OpenPullRequest,
+		nil,
+	)
 	if err != nil {
 		t.Fatalf("setup pull request failed: %v", err)
 	}
 
-	dto := mappers.ToDTOPRShort(pr)
+	dto := mappers.ToDTOPRShort(pullRequest)
 
-	if dto.PullRequestId != pr.ID.String() {
-		t.Errorf("expected PullRequestId %q but got %q", pr.ID.String(), dto.PullRequestId)
+	if dto.PullRequestId != pullRequest.ID.String() {
+		t.Errorf("expected PullRequestId %q but got %q", pullRequest.ID.String(), dto.PullRequestId)
 	}
 
-	if dto.PullRequestName != pr.Name {
-		t.Errorf("expected PullRequestName %q but got %q", pr.Name, dto.PullRequestName)
+	if dto.PullRequestName != pullRequest.Name {
+		t.Errorf("expected PullRequestName %q but got %q", pullRequest.Name, dto.PullRequestName)
 	}
 
-	if dto.AuthorId != pr.AuthorID.String() {
-		t.Errorf("expected AuthorId %q but got %q", pr.AuthorID.String(), dto.AuthorId)
+	if dto.AuthorId != pullRequest.AuthorID.String() {
+		t.Errorf("expected AuthorId %q but got %q", pullRequest.AuthorID.String(), dto.AuthorId)
 	}
 
-	if dto.Status != dtos.PullRequestShortStatus(pr.Status) {
-		t.Errorf("expected Status %q but got %q", pr.Status, dto.Status)
+	if dto.Status != dtos.PullRequestShortStatus(pullRequest.Status) {
+		t.Errorf("expected Status %q but got %q", pullRequest.Status, dto.Status)
 	}
 }

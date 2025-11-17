@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 
@@ -14,40 +15,52 @@ type apiError struct {
 }
 
 func MapError(c *fiber.Ctx, err error) error {
+	msg := sanitizeMessage(err.Error())
+
+	c.Locals("error_cause", err)
+
 	switch {
 	case errors.Is(err, apperrors.ErrTeamExists):
-		return c.Status(400).JSON(apiError{"TEAM_EXISTS", err.Error()})
+		return c.Status(400).JSON(apiError{"TEAM_EXISTS", msg})
 	case errors.Is(err, apperrors.ErrTeamNotFound):
-		return c.Status(404).JSON(apiError{"TEAM_NOT_FOUND", err.Error()})
+		return c.Status(404).JSON(apiError{"TEAM_NOT_FOUND", msg})
 
 	case errors.Is(err, apperrors.ErrUserNotFound):
-		return c.Status(404).JSON(apiError{"USER_NOT_FOUND", err.Error()})
+		return c.Status(404).JSON(apiError{"USER_NOT_FOUND", msg})
 	case errors.Is(err, apperrors.ErrUserInactive):
-		return c.Status(409).JSON(apiError{"USER_INACTIVE", err.Error()})
+		return c.Status(409).JSON(apiError{"USER_INACTIVE", msg})
 
 	case errors.Is(err, apperrors.ErrPRExists):
-		return c.Status(409).JSON(apiError{"PR_EXISTS", err.Error()})
+		return c.Status(409).JSON(apiError{"PR_EXISTS", msg})
 	case errors.Is(err, apperrors.ErrPRNotFound):
-		return c.Status(404).JSON(apiError{"PR_NOT_FOUND", err.Error()})
+		return c.Status(404).JSON(apiError{"PR_NOT_FOUND", msg})
 	case errors.Is(err, apperrors.ErrPRMerged):
-		return c.Status(409).JSON(apiError{"PR_MERGED", err.Error()})
+		return c.Status(409).JSON(apiError{"PR_MERGED", msg})
 	case errors.Is(err, apperrors.ErrPRNotOpen):
-		return c.Status(409).JSON(apiError{"PR_NOT_OPEN", err.Error()})
+		return c.Status(409).JSON(apiError{"PR_NOT_OPEN", msg})
 
 	case errors.Is(err, apperrors.ErrReviewerNotFound):
-		return c.Status(404).JSON(apiError{"REVIEWER_NOT_FOUND", err.Error()})
+		return c.Status(404).JSON(apiError{"REVIEWER_NOT_FOUND", msg})
 	case errors.Is(err, apperrors.ErrNotAssigned):
-		return c.Status(409).JSON(apiError{"NOT_ASSIGNED", err.Error()})
+		return c.Status(409).JSON(apiError{"NOT_ASSIGNED", msg})
 	case errors.Is(err, apperrors.ErrNoCandidate):
-		return c.Status(409).JSON(apiError{"NO_CANDIDATE", err.Error()})
+		return c.Status(409).JSON(apiError{"NO_CANDIDATE", msg})
 
 	case errors.Is(err, apperrors.ErrValidation):
-		return c.Status(400).JSON(apiError{"VALIDATION_ERROR", err.Error()})
+		return c.Status(400).JSON(apiError{"VALIDATION_ERROR", msg})
 
 	default:
 		return c.Status(500).JSON(apiError{
 			Code:    "INTERNAL_ERROR",
-			Message: "something went wrong",
+			Message: sanitizeMessage(err.Error()),
 		})
 	}
+}
+
+func sanitizeMessage(s string) string {
+	s = strings.ReplaceAll(s, "\\n", " : ")
+	s = strings.ReplaceAll(s, "\n", " : ")
+	s = strings.ReplaceAll(s, " : ", ": ")
+
+	return s
 }

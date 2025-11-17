@@ -10,12 +10,12 @@ import (
 )
 
 func ToDomainTeamMember(dto dtos.TeamMember) (*models.TeamMember, error) {
-	id, err := uuid.Parse(dto.UserId)
+	userID, err := uuid.Parse(dto.UserId)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user_id: %w", err)
 	}
 
-	teamMember, err := models.NewTeamMember(id, dto.Username, dto.IsActive)
+	teamMember, err := models.NewTeamMember(userID, dto.Username, dto.IsActive)
 	if err != nil {
 		return nil, fmt.Errorf("invalid team member dto: %w", err)
 	}

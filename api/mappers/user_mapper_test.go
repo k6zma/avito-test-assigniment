@@ -77,6 +77,7 @@ func TestToDTOUser(t *testing.T) {
 	initValidators(t)
 
 	id := uuid.New()
+
 	user, err := models.NewUser(id, "Bob", "devops", false)
 	if err != nil {
 		t.Fatalf("setup user failed: %v", err)

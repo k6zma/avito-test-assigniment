@@ -42,6 +42,7 @@ services:
     container_name: prod-peerly-app
     env_file:
       - .env
+    command: ["-environment", "prod"]
     depends_on:
       prod-peerly-postgres-db:
         condition: service_healthy

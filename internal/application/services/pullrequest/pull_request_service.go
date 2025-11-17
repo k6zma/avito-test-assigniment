@@ -2,15 +2,20 @@ package pullrequest
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
+	"slices"
 
 	"github.com/google/uuid"
 
 	"github.com/k6zma/avito-test-assigniment/internal/application/services/pullrequest/reviewers/initialize"
 	"github.com/k6zma/avito-test-assigniment/internal/application/services/pullrequest/reviewers/reassign"
+	apperrors "github.com/k6zma/avito-test-assigniment/internal/domain/errors"
 	"github.com/k6zma/avito-test-assigniment/internal/domain/models"
 	"github.com/k6zma/avito-test-assigniment/internal/domain/repositories"
 	"github.com/k6zma/avito-test-assigniment/internal/domain/valueobjects"
+	"github.com/k6zma/avito-test-assigniment/pkg/logger"
 )
 
 type PullRequestService struct {
@@ -18,6 +23,7 @@ type PullRequestService struct {
 	users            repositories.UserRepository
 	initStrategy     initialize.ReviewerInitializeStrategy
 	reassignStrategy reassign.ReviewerReassignStrategy
+	logger           *slog.Logger
 }
 
 func NewPullRequestService(
@@ -25,7 +31,10 @@ func NewPullRequestService(
 	userRepo repositories.UserRepository,
 	initStrategy initialize.ReviewerInitializeStrategy,
 	reassignStrategy reassign.ReviewerReassignStrategy,
+	logger *slog.Logger,
 ) *PullRequestService {
+	const pullRequestEntity = "pull_request"
+
 	if initStrategy == nil {
 		initStrategy = initialize.NewBaseInitializeStrategy(2)
 	}
@@ -39,21 +48,42 @@ func NewPullRequestService(
 		users:            userRepo,
 		initStrategy:     initStrategy,
 		reassignStrategy: reassignStrategy,
+		logger:           logger.WithGroup(pullRequestEntity),
 	}
 }
 
 func (s *PullRequestService) CreatePullRequest(
 	ctx context.Context,
-	id uuid.UUID,
+	pullRequestID uuid.UUID,
 	name string,
 	authorID uuid.UUID,
-) (*models.PullRequest, error) {
+) (pullRequest *models.PullRequest, err error) {
+	const createPullRequestMethod = "CreatePullRequest"
+
+	log := s.logger.WithGroup(createPullRequestMethod)
+
+	operationLog := logger.StartOperation(
+		log,
+		"creating pull request",
+		slog.String("pull_request_id", pullRequestID.String()),
+		slog.String("author_id", authorID.String()),
+	)
+	defer operationLog.FinishOperation(
+		&err,
+		slog.String("pull_request_id", pullRequestID.String()),
+		slog.String("author_id", authorID.String()),
+	)
+
 	author, err := s.users.GetByID(ctx, authorID)
 	if err != nil {
 		return nil, fmt.Errorf("failed get author user: %w", err)
 	}
+
 	if !author.IsActive {
-		return nil, fmt.Errorf("author %s is not active", authorID)
+		return nil, errors.Join(
+			apperrors.ErrUserInactive,
+			fmt.Errorf("author %s is not active", authorID),
+		)
 	}
 
 	teamActive, err := s.users.ListActiveUsersInTeam(ctx, author.TeamName)
@@ -63,14 +93,14 @@ func (s *PullRequestService) CreatePullRequest(
 
 	candidates := make([]uuid.UUID, 0, len(teamActive))
 
-	for _, uid := range teamActive {
-		if uid != authorID {
-			candidates = append(candidates, uid)
+	for _, userID := range teamActive {
+		if userID != authorID {
+			candidates = append(candidates, userID)
 		}
 	}
 
-	pr, err := models.NewPullRequest(
-		id,
+	pullRequest, err = models.NewPullRequest(
+		pullRequestID,
 		name,
 		authorID,
 		valueobjects.OpenPullRequest,
@@ -80,66 +110,116 @@ func (s *PullRequestService) CreatePullRequest(
 		return nil, fmt.Errorf("failed create pull request domain model: %w", err)
 	}
 
-	assigned, err := s.initStrategy.PickInitialReviewers(ctx, pr, candidates)
+	assigned, err := s.initStrategy.PickInitialReviewers(ctx, pullRequest, candidates)
 	if err != nil {
 		return nil, fmt.Errorf("failed pick initial reviewers: %w", err)
 	}
 
-	pr.AssignedReviewers = assigned
+	pullRequest.AssignedReviewers = assigned
 
-	if err = s.pullRequests.Create(ctx, pr); err != nil {
+	if err = s.pullRequests.Create(ctx, pullRequest); err != nil {
 		return nil, fmt.Errorf("failed create pull request: %w", err)
 	}
 
-	return pr, nil
+	return pullRequest, nil
 }
 
 func (s *PullRequestService) GetPullRequest(
 	ctx context.Context,
-	id uuid.UUID,
-) (*models.PullRequest, error) {
-	pr, err := s.pullRequests.GetByID(ctx, id)
+	pullRequestID uuid.UUID,
+) (pullRequest *models.PullRequest, err error) {
+	const getPullRequestMethod = "GetPullRequest"
+
+	log := s.logger.WithGroup(getPullRequestMethod)
+
+	operationLog := logger.StartOperation(
+		log,
+		"getting pull request",
+		slog.String("pull_request_id", pullRequestID.String()),
+	)
+	defer operationLog.FinishOperation(&err, slog.String("pull_request_id", pullRequestID.String()))
+
+	pullRequest, err = s.pullRequests.GetByID(ctx, pullRequestID)
 	if err != nil {
 		return nil, fmt.Errorf("failed get pull request by id: %w", err)
 	}
 
-	return pr, nil
+	return pullRequest, nil
 }
 
 func (s *PullRequestService) MergePullRequest(
 	ctx context.Context,
-	id uuid.UUID,
-) (*models.PullRequest, error) {
-	pr, err := s.pullRequests.Merge(ctx, id)
+	pullRequestID uuid.UUID,
+) (pullRequest *models.PullRequest, err error) {
+	const mergePullRequestMethod = "MergePullRequest"
+
+	log := s.logger.WithGroup(mergePullRequestMethod)
+
+	operationLog := logger.StartOperation(
+		log,
+		"merging pull request",
+		slog.String("pull_request_id", pullRequestID.String()),
+	)
+
+	defer operationLog.FinishOperation(&err, slog.String("pull_request_id", pullRequestID.String()))
+
+	pullRequest, err = s.pullRequests.Merge(ctx, pullRequestID)
 	if err != nil {
 		return nil, fmt.Errorf("failed merge pull request: %w", err)
 	}
 
-	return pr, nil
+	return pullRequest, nil
 }
 
 func (s *PullRequestService) ListPullRequestsAssignedToUser(
 	ctx context.Context,
 	reviewerID uuid.UUID,
-) ([]*models.PullRequest, error) {
-	prs, err := s.pullRequests.ListAssignedToUser(ctx, reviewerID)
+) (pullRequests []*models.PullRequest, err error) {
+	const listAssignedMethod = "ListPullRequestsAssignedToUser"
+
+	log := s.logger.WithGroup(listAssignedMethod)
+
+	operationLog := logger.StartOperation(
+		log,
+		"listing pull requests assigned to user",
+		slog.String("reviewer_id", reviewerID.String()),
+	)
+	defer operationLog.FinishOperation(&err, slog.String("reviewer_id", reviewerID.String()))
+
+	pullRequests, err = s.pullRequests.ListAssignedToUser(ctx, reviewerID)
 	if err != nil {
 		return nil, fmt.Errorf("failed list pull requests assigned to user: %w", err)
 	}
 
-	return prs, nil
+	return pullRequests, nil
 }
 
 func (s *PullRequestService) AddReviewer(
 	ctx context.Context,
 	pullRequestID, reviewerID uuid.UUID,
-) error {
-	pr, err := s.pullRequests.GetByID(ctx, pullRequestID)
+) (err error) {
+	const addReviewerMethod = "AddReviewer"
+
+	log := s.logger.WithGroup(addReviewerMethod)
+
+	operationLog := logger.StartOperation(
+		log,
+		"adding reviewer",
+		slog.String("pull_request_id", pullRequestID.String()),
+		slog.String("reviewer_id", reviewerID.String()),
+	)
+	defer operationLog.FinishOperation(
+		&err,
+		slog.String("pull_request_id", pullRequestID.String()),
+		slog.String("reviewer_id", reviewerID.String()),
+	)
+
+	pullRequest, err := s.pullRequests.GetByID(ctx, pullRequestID)
 	if err != nil {
 		return fmt.Errorf("failed get pull request: %w", err)
 	}
 
-	if pr.Status != valueobjects.OpenPullRequest {
+	if pullRequest.Status != valueobjects.OpenPullRequest {
 		return fmt.Errorf("cannot modify reviewers for non-open pull request")
 	}
 
@@ -173,13 +253,29 @@ func (s *PullRequestService) AddReviewer(
 func (s *PullRequestService) RemoveReviewer(
 	ctx context.Context,
 	pullRequestID, reviewerID uuid.UUID,
-) error {
-	pr, err := s.pullRequests.GetByID(ctx, pullRequestID)
+) (err error) {
+	const removeReviewerMethod = "RemoveReviewer"
+
+	log := s.logger.WithGroup(removeReviewerMethod)
+
+	operationLog := logger.StartOperation(
+		log,
+		"removing reviewer",
+		slog.String("pull_request_id", pullRequestID.String()),
+		slog.String("reviewer_id", reviewerID.String()),
+	)
+	defer operationLog.FinishOperation(
+		&err,
+		slog.String("pull_request_id", pullRequestID.String()),
+		slog.String("reviewer_id", reviewerID.String()),
+	)
+
+	pullRequest, err := s.pullRequests.GetByID(ctx, pullRequestID)
 	if err != nil {
 		return fmt.Errorf("failed get pull request: %w", err)
 	}
 
-	if pr.Status != valueobjects.OpenPullRequest {
+	if pullRequest.Status != valueobjects.OpenPullRequest {
 		return fmt.Errorf("cannot modify reviewers for non-open pull request")
 	}
 
@@ -193,20 +289,42 @@ func (s *PullRequestService) RemoveReviewer(
 func (s *PullRequestService) ListReviewers(
 	ctx context.Context,
 	pullRequestID uuid.UUID,
-) ([]uuid.UUID, error) {
-	revs, err := s.pullRequests.ListReviewers(ctx, pullRequestID)
+) (reviewers []uuid.UUID, err error) {
+	const listReviewersMethod = "ListReviewers"
+
+	log := s.logger.WithGroup(listReviewersMethod)
+
+	operationLog := logger.StartOperation(
+		log,
+		"listing reviewers",
+		slog.String("pull_request_id", pullRequestID.String()),
+	)
+	defer operationLog.FinishOperation(&err, slog.String("pull_request_id", pullRequestID.String()))
+
+	reviewers, err = s.pullRequests.ListReviewers(ctx, pullRequestID)
 	if err != nil {
 		return nil, fmt.Errorf("failed list reviewers for pull request: %w", err)
 	}
 
-	return revs, nil
+	return reviewers, nil
 }
 
 func (s *PullRequestService) CountReviewers(
 	ctx context.Context,
 	pullRequestID uuid.UUID,
-) (int64, error) {
-	count, err := s.pullRequests.CountReviewers(ctx, pullRequestID)
+) (count int64, err error) {
+	const countReviewersMethod = "CountReviewers"
+
+	log := s.logger.WithGroup(countReviewersMethod)
+
+	operationLog := logger.StartOperation(
+		log,
+		"counting reviewers",
+		slog.String("pull_request_id", pullRequestID.String()),
+	)
+	defer operationLog.FinishOperation(&err, slog.String("pull_request_id", pullRequestID.String()))
+
+	count, err = s.pullRequests.CountReviewers(ctx, pullRequestID)
 	if err != nil {
 		return 0, fmt.Errorf("failed count reviewers for pull request: %w", err)
 	}
@@ -217,68 +335,79 @@ func (s *PullRequestService) CountReviewers(
 func (s *PullRequestService) ReassignReviewer(
 	ctx context.Context,
 	pullRequestID, leavingReviewerID uuid.UUID,
-) error {
-	pr, err := s.pullRequests.GetByID(ctx, pullRequestID)
+) (err error) {
+	const reassignReviewerMethod = "ReassignReviewer"
+
+	log := s.logger.WithGroup(reassignReviewerMethod)
+
+	operationLog := logger.StartOperation(
+		log,
+		"reassigning reviewer",
+		slog.String("pull_request_id", pullRequestID.String()),
+		slog.String("leaving_reviewer_id", leavingReviewerID.String()),
+	)
+	defer operationLog.FinishOperation(
+		&err,
+		slog.String("pull_request_id", pullRequestID.String()),
+		slog.String("leaving_reviewer_id", leavingReviewerID.String()),
+	)
+
+	pullRequest, err := s.pullRequests.GetByID(ctx, pullRequestID)
 	if err != nil {
-		return fmt.Errorf("failed get pull request: %w", err)
+		return err
 	}
 
-	if pr.Status != valueobjects.OpenPullRequest {
-		return fmt.Errorf("cannot reassign reviewers for non-open pull request")
+	if pullRequest.Status != valueobjects.OpenPullRequest {
+		return apperrors.ErrPRNotOpen
 	}
 
-	found := false
-
-	for _, rid := range pr.AssignedReviewers {
-		if rid == leavingReviewerID {
-			found = true
-
-			break
-		}
-	}
+	found := slices.Contains(pullRequest.AssignedReviewers, leavingReviewerID)
 
 	if !found {
-		return fmt.Errorf("user %s is not a reviewer of PR %s", leavingReviewerID, pullRequestID)
+		return errors.Join(
+			apperrors.ErrNotAssigned,
+			fmt.Errorf("user %s is not a reviewer of PR %s", leavingReviewerID, pullRequestID),
+		)
 	}
 
 	leavingUser, err := s.users.GetByID(ctx, leavingReviewerID)
 	if err != nil {
-		return fmt.Errorf("failed get leaving reviewer: %w", err)
+		return err
 	}
 
 	teamActive, err := s.users.ListActiveUsersInTeam(ctx, leavingUser.TeamName)
 	if err != nil {
-		return fmt.Errorf("failed list active users: %w", err)
+		return err
 	}
 
 	candidates := make([]uuid.UUID, 0)
 
-	for _, uid := range teamActive {
-		if uid != leavingReviewerID && uid != pr.AuthorID {
-			candidates = append(candidates, uid)
+	for _, userID := range teamActive {
+		if userID != leavingReviewerID && userID != pullRequest.AuthorID {
+			candidates = append(candidates, userID)
 		}
 	}
 
 	replacement, err := s.reassignStrategy.PickReplacementReviewers(
 		ctx,
-		pr,
+		pullRequest,
 		leavingReviewerID,
 		candidates,
 	)
 	if err != nil {
-		return fmt.Errorf("failed pick replacement reviewer: %w", err)
+		return err
 	}
 
 	if replacement == uuid.Nil {
-		return fmt.Errorf("no available candidates to reassign reviewer")
+		return apperrors.ErrNoCandidate
 	}
 
 	if err = s.pullRequests.AddReviewer(ctx, pullRequestID, replacement); err != nil {
-		return fmt.Errorf("failed add replacement reviewer: %w", err)
+		return err
 	}
 
 	if err = s.pullRequests.RemoveReviewer(ctx, pullRequestID, leavingReviewerID); err != nil {
-		return fmt.Errorf("failed remove old reviewer: %w", err)
+		return err
 	}
 
 	return nil

@@ -20,6 +20,7 @@ func TestNewTeamMember_Valid(t *testing.T) {
 	initValidators(t)
 
 	id := uuid.New()
+
 	member, err := models.NewTeamMember(id, "Alice", true)
 	if err != nil {
 		t.Fatalf("expected no error but got %v", err)

@@ -24,6 +24,7 @@ func TestNewPullRequest_Valid(t *testing.T) {
 	initValidators(t)
 
 	reviewers := []uuid.UUID{uuid.New(), uuid.New()}
+
 	pr, err := models.NewPullRequest(
 		uuid.New(),
 		"Add feature",

@@ -1,10 +1,12 @@
 package mappers
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 
+	apperrors "github.com/k6zma/avito-test-assigniment/internal/domain/errors"
 	"github.com/k6zma/avito-test-assigniment/internal/domain/models"
 	"github.com/k6zma/avito-test-assigniment/internal/domain/valueobjects"
 	"github.com/k6zma/avito-test-assigniment/internal/infrastructure/repositories/postgres/generated"
@@ -31,7 +33,7 @@ func ToDomainPullRequest(
 	}
 
 	if err := pullRequestDomain.Validate(); err != nil {
-		return nil, err
+		return nil, errors.Join(apperrors.ErrValidation, err)
 	}
 
 	return pullRequestDomain, nil

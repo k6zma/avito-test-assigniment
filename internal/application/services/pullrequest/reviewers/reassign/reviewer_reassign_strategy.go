@@ -11,7 +11,7 @@ import (
 type ReviewerReassignStrategy interface {
 	PickReplacementReviewers(
 		ctx context.Context,
-		pr *models.PullRequest,
+		pullRequest *models.PullRequest,
 		leavingReviewer uuid.UUID,
 		candidates []uuid.UUID,
 	) (uuid.UUID, error)

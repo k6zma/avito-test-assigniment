@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"log/slog"
+	"time"
 )
 
 type jsonLogHandler struct {
@@ -13,8 +14,25 @@ type jsonLogHandler struct {
 
 func newJSONLogHandler(w io.Writer, level slog.Level) *jsonLogHandler {
 	return &jsonLogHandler{
-		baseHandler: slog.NewJSONHandler(w, &slog.HandlerOptions{Level: level}),
-		level:       level,
+		baseHandler: slog.NewJSONHandler(
+			w,
+			&slog.HandlerOptions{
+				Level: level,
+				ReplaceAttr: func(_ []string, attr slog.Attr) slog.Attr {
+					if attr.Key == slog.TimeKey {
+						attr.Value = slog.StringValue(attr.Value.Time().Format(time.DateTime))
+						return attr
+					}
+
+					if attr.Value.Kind() == slog.KindDuration {
+						attr.Value = slog.StringValue(attr.Value.Duration().String())
+					}
+
+					return attr
+				},
+			},
+		),
+		level: level,
 	}
 }
 

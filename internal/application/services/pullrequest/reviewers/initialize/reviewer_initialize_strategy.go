@@ -11,7 +11,7 @@ import (
 type ReviewerInitializeStrategy interface {
 	PickInitialReviewers(
 		ctx context.Context,
-		pr *models.PullRequest,
+		pullRequest *models.PullRequest,
 		candidates []uuid.UUID,
 	) ([]uuid.UUID, error)
 }

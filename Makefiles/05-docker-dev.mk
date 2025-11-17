@@ -1,7 +1,7 @@
 .PHONY: dev-up
 dev-up: ## Поднятие dev окружения
 	@echo -e "$(YELLOW)[INFO][DEV-UP][STARTED]$(RESET) Запуск dev окружения"
-	@docker compose -f $(DOCKER_DEV_COMPOSE) up -d && \
+	@docker compose -f $(DOCKER_DEV_COMPOSE) up --build -d && \
 		echo -e "$(GREEN)[INFO][DEV-UP][SUCCESS]$(RESET) Dev окружение успешно запущено" || \
 		echo -e "$(RED)[ERROR][DEV-UP][FAIL]$(RESET) Ошибка при запуске dev окружения"
 

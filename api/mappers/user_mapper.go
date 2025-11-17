@@ -10,13 +10,13 @@ import (
 )
 
 func ToDomainUser(dto dtos.User) (*models.User, error) {
-	id, err := uuid.Parse(dto.UserId)
+	userID, err := uuid.Parse(dto.UserId)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user_id: %w", err)
 	}
 
 	user, err := models.NewUser(
-		id,
+		userID,
 		dto.Username,
 		dto.TeamName,
 		dto.IsActive,

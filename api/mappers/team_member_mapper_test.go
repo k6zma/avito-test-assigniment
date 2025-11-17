@@ -70,6 +70,7 @@ func TestToDTOTeamMember(t *testing.T) {
 	initValidators(t)
 
 	id := uuid.New()
+
 	member, err := models.NewTeamMember(id, "Bob", false)
 	if err != nil {
 		t.Fatalf("setup team member failed: %v", err)

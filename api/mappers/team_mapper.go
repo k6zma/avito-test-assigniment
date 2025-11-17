@@ -10,8 +10,8 @@ import (
 func ToDomainTeam(dto dtos.Team) (*models.Team, error) {
 	members := make([]*models.TeamMember, 0, len(dto.Members))
 
-	for _, member := range dto.Members {
-		teamMember, err := ToDomainTeamMember(member)
+	for _, memberDTO := range dto.Members {
+		teamMember, err := ToDomainTeamMember(memberDTO)
 		if err != nil {
 			return nil, fmt.Errorf("invalid member: %w", err)
 		}
